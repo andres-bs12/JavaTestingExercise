@@ -1,11 +1,13 @@
+package ex1;
+
 public class ShippingService {
 
 
     public double calculatePackageCost(Package p) {
         if (p == null) {
             System.out.println("Wrong package info");
+            return 0;
         }
-
 
         double totalCost = p.getWeight() * 2.5;
 

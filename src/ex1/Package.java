@@ -1,3 +1,5 @@
+package ex1;
+
 public class Package {
     private String trackingId;
     private double weight;
@@ -31,5 +33,9 @@ public class Package {
         this.trackingId = trackingId;
         this.weight = weight;
         this.destination = destination;
+    }
+
+    public Package() {
+
     }
 }
