@@ -5,54 +5,60 @@ import java.util.SortedMap;
 public class WalletService {
 
     boolean deposit(Wallet wallet, double amount) {
-        if (wallet == null) return false;
-
+        if (wallet == null) {
+            throw new IllegalArgumentException("Wallet can't be null");
+        }
         if (amount <= 0) {
-            System.out.println("The amount must to be greater than 0");
-            return false;
+            throw new IllegalArgumentException("amount can not be negative");
         }
         if (wallet.getOwner() == null || wallet.getOwner().isEmpty()) {
-            System.out.println("The receiver does not exist");
-            return false;
+            throw new IllegalArgumentException("The receiver does not exist");
         }
-
 
         wallet.setBalance(wallet.getBalance() + amount);
         wallet.getHistory().add("Deposit: " + amount);
         return true;
     }
 
-    boolean withdraw(Wallet wallet, double amount) {
-        if (wallet == null) return false;
+    void withdraw(Wallet wallet, double amount) {
+        if (wallet == null)
+            throw new IllegalArgumentException("Wallet can't be null");
+        ;
 
-        if (amount <= 0 || amount > wallet.getBalance()) {
-            System.out.println("Invalid amount or insufficient balance");
-            return false;
+        if (amount <= 0) {
+            throw new IllegalArgumentException("The amount has to be positive");
+        }
+
+        if (amount > wallet.getBalance()) {
+            throw new IllegalArgumentException("Not enough balance: you have " + wallet.getBalance());
+
         }
         wallet.setBalance(wallet.getBalance() - amount);
         wallet.getHistory().add("Withdraw " + amount);
-        return true;
+
 
     }
 
-    boolean transfer(Wallet senderWallet, Wallet reciverWallet, double amount) {
-        if (senderWallet == null || reciverWallet == null || senderWallet == reciverWallet) {
-            System.out.println("Check the data again");
-            return false;
+    void transfer(Wallet senderWallet, Wallet reciverWallet, double amount) {
+        if (senderWallet == null || reciverWallet == null) {
+            throw new IllegalArgumentException("The wallets can't be null");
         }
 
-        if (senderWallet.getOwner() == null || senderWallet.getOwner().isEmpty() ||
-                reciverWallet.getOwner() == null || reciverWallet.getOwner().isEmpty() || amount <= 0) {
-            return false;
+        if (senderWallet == reciverWallet) {
+            throw new IllegalArgumentException("You can not transfer to yourself");
         }
 
-        if (withdraw(senderWallet, amount)) {
-            deposit(reciverWallet, amount);
-            senderWallet.getHistory().add("Transfer sent to " + reciverWallet.getOwner());
-            reciverWallet.getHistory().add("Transfer received from " + senderWallet.getOwner());
-            return true;
+        if (reciverWallet.getOwner() == null || reciverWallet.getOwner().isEmpty()) {
+            throw new IllegalArgumentException("Receiver invalid");
         }
-        return false;
+
+        withdraw(senderWallet, amount);
+        deposit(reciverWallet, amount);
+
+
+        senderWallet.getHistory().add("Transfer sent to " + reciverWallet.getOwner());
+        reciverWallet.getHistory().add("Transfer received from " + senderWallet.getOwner());
+
     }
 
 }

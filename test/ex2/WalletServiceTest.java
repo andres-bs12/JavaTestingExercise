@@ -16,16 +16,24 @@ public class WalletServiceTest {
         assertEquals(1, wallet.getHistory().size());
     }
 
-
     @Test
-    void shouldNotWithdrawIfBalanceIsInsufficient() {
-        Wallet wallet = new Wallet("Andres");
+    void shouldThrowExceptionWhenDepositToNull() {
         WalletService service = new WalletService();
 
-        boolean result = service.withdraw(wallet, 100);
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.deposit(null, 20.0);
+        });
+    }
 
-        assertFalse(result, "Should be false, there are no founds.");
-        assertEquals(0.0, wallet.getBalance());
+    @Test
+    void shouldThrowExceptionWhenBalanceIsInsufficient() {
+        Wallet wallet = new Wallet("Andres");
+        wallet.setBalance(10.0);
+        WalletService service = new WalletService();
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.withdraw(wallet, 100.0);
+        });
     }
 
     @Test
@@ -34,10 +42,8 @@ public class WalletServiceTest {
         WalletService service = new WalletService();
 
         wallet.setBalance(50.0);
+        service.withdraw(wallet, 20);
 
-        boolean result = service.withdraw(wallet, 20);
-
-        assertTrue(result, "The withdraw is successful");
         assertEquals(30.0, wallet.getBalance(), "Balance should be 30 after (actual 50 - withdraw 20 = 30 left)");
     }
 
@@ -45,62 +51,66 @@ public class WalletServiceTest {
     void shouldReturnNullWithUnderZeroDeposit() {
         Wallet wallet = new Wallet("Andres");
         WalletService service = new WalletService();
-
-        service.deposit(null, 20);
-
-        assertEquals(0.0, wallet.getBalance());
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.deposit(null, 20);
+        });
     }
 
     @Test
-    void shouldNotDepositMoneyWhenOwnerIsEmpty() {
+    void shouldThrowExceptionWhenOwnerIsEmpty() {
         Wallet wallet = new Wallet("");
         WalletService service = new WalletService();
 
-        service.deposit(wallet, 20);
-        assertEquals(0.0, wallet.getBalance());
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.deposit(wallet, 20);
+        });
     }
 
     @Test
-    void shouldNotDepositNegativeAmount() {
+    void shouldThrowExceptionWhenDepositIsNegative() {
         Wallet wallet = new Wallet("Andres");
         WalletService service = new WalletService();
 
-        service.deposit(wallet, -10);
-
-        assertEquals(0.0, wallet.getBalance(), "Balance should not change with negative numbers");
-        assertTrue(wallet.getHistory().isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.deposit(wallet, -10);
+        });
     }
 
     @Test
     void shouldNotWithdrawNegativeAmount() {
         Wallet wallet = new Wallet("Andres");
+        wallet.setBalance(50.0);
         WalletService service = new WalletService();
 
-        service.withdraw(wallet, -10);
-        assertEquals(0.0, wallet.getBalance(), "Balance should not change with negative numbers");
-        assertTrue(wallet.getHistory().isEmpty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.withdraw(wallet, -10);
+        });
+
+
+        assertEquals(50.0, wallet.getBalance(), "The balance should not change");
+        assertTrue(wallet.getHistory().isEmpty(), "The history must be empty");
     }
 
     @Test
     void shouldReturnFalseWhenWithdrawWalletIsNull() {
         WalletService service = new WalletService();
 
-        boolean result = service.withdraw(null, 100.0);
-
-        assertFalse(result);
-
+        //boolean result = service.withdraw(null, 100.0);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            service.withdraw(null, 100.0);
+        });
     }
 
     @Test
-    void shouldNotDepositWhenOwnerIsNull() {
+    void shouldThrowExceptionWhenOwnerIsNull() {
         Wallet wallet = new Wallet(null);
         WalletService service = new WalletService();
 
-        service.deposit(wallet, 50.0);
-
-
-        assertEquals(0.0, wallet.getBalance(), "Balance should not change with null owner");
-        assertTrue(wallet.getHistory().isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.deposit(wallet, 50.0);
+        });
     }
 
     // Transfer tests
@@ -110,8 +120,9 @@ public class WalletServiceTest {
         Wallet receiverWaller = new Wallet("Andres");
         WalletService service = new WalletService();
 
-        boolean result = service.transfer(senderWallet, receiverWaller, 100);
-        assertFalse(result, "Should not send money when senderWallet is null");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWallet, receiverWaller, 100);
+        });
     }
 
     @Test
@@ -120,17 +131,20 @@ public class WalletServiceTest {
         Wallet receiverWaller = new Wallet(null);
         WalletService service = new WalletService();
 
-        boolean result = service.transfer(senderWallet, receiverWaller, 100);
-        assertFalse(result, "Should not send money when senderWallet is null");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWallet, receiverWaller, 100);
+        });
     }
 
     @Test
-    void shouldRetornFalseWhenSendingToSameAccount () {
+    void shouldRetornFalseWhenSendingToSameAccount() {
         Wallet senderWallet = new Wallet("Andres");
         WalletService service = new WalletService();
 
-        boolean result = service.transfer(senderWallet, senderWallet, 100);
-        assertFalse(result, "Can not send money to same bank account.");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWallet, senderWallet, 100);
+        });
+
     }
 
     @Test
@@ -141,8 +155,9 @@ public class WalletServiceTest {
 
         senderWallet.setBalance(100.00);
 
-        boolean result = service.transfer(senderWallet, receiverWaller, 101);
-        assertFalse(result, "insufficient balance");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWallet, receiverWaller, 101);
+        });
     }
 
     @Test
@@ -153,39 +168,28 @@ public class WalletServiceTest {
 
         senderWallet.setBalance(10);
 
-        boolean result = service.transfer(senderWallet, receiverWaller, -101);
-        assertFalse(result, "Amount below zero is not valid");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWallet, receiverWaller, -101);
+        });
     }
 
     @Test
     void shouldReturnFalseIfSenderWalletIsFalse() {
         Wallet receiverWaller = new Wallet("Juan");
         WalletService service = new WalletService();
-        boolean result = service.transfer(null, receiverWaller, 10);
-        assertFalse(result, "Sender or receiver can not be null");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(null, receiverWaller, 10);
+        });
     }
 
     @Test
     void shouldReturnFalseIfReceiverWalletIsFalse() {
         Wallet senderWaller = new Wallet("Juan");
         WalletService service = new WalletService();
-        boolean result = service.transfer(senderWaller, null, 10);
-        assertFalse(result, "Sender or receiver can not be null");
-    }
-
-    @Test
-    void shouldHandleFailureDuringDepositInTransfer() {
-        Wallet sender = new Wallet("Andres");
-        sender.setBalance(100.0);
-
-        Wallet receiver = new Wallet(null);
-
-        WalletService service = new WalletService();
-
-
-        boolean result = service.transfer(sender, receiver, 50.0);
-
-        assertFalse(result, "The transfer will fail if the deposit is not possible");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWaller, null, 10);
+        });
     }
 
     @Test
@@ -194,8 +198,9 @@ public class WalletServiceTest {
         Wallet senderWallet = new Wallet("");
         WalletService service = new WalletService();
 
-        boolean result = service.transfer( senderWallet, receiverWallet, 10);
-        assertFalse(result, "The sender wallet name should not be null.");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(senderWallet, receiverWallet, 10);
+        });
     }
 
     @Test
@@ -204,8 +209,13 @@ public class WalletServiceTest {
         sender.setBalance(100.0);
         Wallet receiver = new Wallet("");
         WalletService service = new WalletService();
-        boolean result = service.transfer(sender, receiver, 50.0);
-        assertFalse(result, "Should fail because receptor has no name");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.transfer(sender, receiver, 50.0);
+        });
+
+        assertEquals(100.0, sender.getBalance(), "The balance should not change");
+        assertTrue(sender.getHistory().isEmpty(), "The history must not change");
     }
 
     @Test
@@ -217,9 +227,8 @@ public class WalletServiceTest {
         senderWallet.setBalance(10);
         receiverWaller.setBalance(20);
 
-        boolean result = service.transfer(senderWallet, receiverWaller, 10);
+        service.transfer(senderWallet, receiverWaller, 10);
 
-        assertTrue(result, "Money sent properly");
         assertEquals(30, receiverWaller.getBalance(), "should add 10 to receiver wallet, 10 + 20(actual) = 30");
         assertEquals(0, senderWallet.getBalance(), "Sender wallet should update to 0. 10 - 10 = 0");
         assertFalse(senderWallet.getHistory().isEmpty(), "The sender wallet history is updated");
