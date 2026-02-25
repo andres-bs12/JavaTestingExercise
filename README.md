@@ -1,2 +1,2 @@
 # JavaTestingExercise
-Java Testing Exercises
+Java logic exercises with testing
