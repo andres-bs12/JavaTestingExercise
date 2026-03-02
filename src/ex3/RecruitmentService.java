@@ -28,4 +28,41 @@ public class RecruitmentService {
         return fitCandidates;
     }
 
+    List<String> getScoredCandidates(List<Candidate> candidates, List<String> requiredSkills, int minScore, int yearsOfExperience) {
+        if (candidates.isEmpty()) {
+            throw new IllegalArgumentException("Candidates list must not be empty");
+        }
+        if (requiredSkills.isEmpty()) {
+            throw new IllegalArgumentException("Required skill can't be empty");
+        }
+        // Initialize List for fitCandidates
+        List<String> fitCandidates = new ArrayList<>();
+        // Initialize List to save scores
+
+        // Send candidates to calculate score
+        for (Candidate candidate : candidates) {
+            if (candidate.getYearsOfExperience() >= yearsOfExperience) {
+                int score = calculateScore(candidate);
+                if (score > minScore) {
+                    fitCandidates.add(String.format((candidate.getName()) + " Score [" + score + "]"));
+                }
+            }
+        }
+        return fitCandidates;
+    }
+
+    int calculateScore(Candidate candidate) {
+        // Initialize counter
+        int score = 0;
+
+        score += candidate.getYearsOfExperience() * 10;
+
+        for (String skill : candidate.getSkills()) {
+            if (candidate.getSkills().contains(skill)) {
+                score += 5;
+            }
+        }
+        return score;
+    }
+
 }
