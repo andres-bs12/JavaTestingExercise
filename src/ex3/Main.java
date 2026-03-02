@@ -20,6 +20,11 @@ public class Main {
             System.out.println(candidate);
         }
 
+        List<String> perfectCandidates = service.getScoredCandidates(candidateList, List.of("Java", "Python", "HTML"), 50, 2);
+
+        System.out.println(perfectCandidates);
+
+
     }
 
 }
